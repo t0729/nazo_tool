@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>S-net 地図ビューア</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 500px; width: 100%; }
+    #controls { margin-top: 10px; text-align: center; }
+    button { padding: 10px 20px; margin: 0 10px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h2 style="text-align:center;">S-net 地図ビューア</h2>
+  <div id="map"></div>
+  <div id="controls">
+    <button onclick="prev()">前へ</button>
+    <button onclick="next()">次へ</button>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const coordinates = {{ coordinates|tojson }};
+    let currentIndex = 0;
+    const zoomLevel = 10;
+
+    const map = L.map('map').setView(coordinates[0], zoomLevel);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 🔴 全地点を赤丸で表示
+    const redMarkers = coordinates.map((coord, i) =>
+      L.circleMarker(coord, {
+        radius: 6,
+        color: 'red',
+        fillColor: 'red',
+        fillOpacity: 0.8
+      }).addTo(map)
+    );
+
+    // 📍 現在地点のピン
+    let activeMarker = L.marker(coordinates[0]).addTo(map).bindPopup(`地点 1`).openPopup();
+
+    function updateMap(index) {
+      map.setView(coordinates[index], zoomLevel);
+      activeMarker.setLatLng(coordinates[index]).setPopupContent(`地点 ${index + 1}`).openPopup();
+    }
+
+    function next() {
+      if (currentIndex < coordinates.length - 1) {
+        currentIndex++;
+        updateMap(currentIndex);
+      }
+    }
+
+    function prev() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateMap(currentIndex);
+      }
+    }
+  </script>
+</body>
+</html>
